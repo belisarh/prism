@@ -9,12 +9,12 @@ use Prism\Prism\Concerns\CallsTools;
 use Prism\Prism\Enums\FinishReason;
 use Prism\Prism\Enums\StructuredMode;
 use Prism\Prism\Exceptions\PrismException;
-use Prism\Prism\Providers\OpenAI\Concerns\BuildsTools;
 use Prism\Prism\Providers\OpenAI\Concerns\MapsFinishReason;
 use Prism\Prism\Providers\OpenAI\Concerns\ValidatesResponse;
 use Prism\Prism\Providers\OpenAI\Maps\MessageMap;
 use Prism\Prism\Providers\OpenAI\Maps\ToolCallMap;
 use Prism\Prism\Providers\OpenAI\Maps\ToolChoiceMap;
+use Prism\Prism\Providers\OpenAI\Maps\ToolMap;
 use Prism\Prism\Providers\OpenAI\Support\StructuredModeResolver;
 use Prism\Prism\Structured\Request;
 use Prism\Prism\Structured\Response as StructuredResponse;
@@ -24,12 +24,12 @@ use Prism\Prism\ValueObjects\Messages\AssistantMessage;
 use Prism\Prism\ValueObjects\Messages\SystemMessage;
 use Prism\Prism\ValueObjects\Messages\ToolResultMessage;
 use Prism\Prism\ValueObjects\Meta;
+use Prism\Prism\ValueObjects\ProviderTool;
 use Prism\Prism\ValueObjects\ToolResult;
 use Prism\Prism\ValueObjects\Usage;
 
 class Structured
 {
-    use BuildsTools;
     use CallsTools;
     use MapsFinishReason;
     use ValidatesResponse;
@@ -213,6 +213,28 @@ class Structured
     protected function shouldContinue(Request $request): bool
     {
         return $this->responseBuilder->steps->count() < $request->maxSteps();
+    }
+
+    /**
+     * @return array<int|string,mixed>
+     */
+    protected function buildTools(Request $request): array
+    {
+        $tools = ToolMap::map($request->tools());
+
+        if ($request->providerTools() === []) {
+            return $tools;
+        }
+
+        $providerTools = array_map(
+            fn (ProviderTool $tool): array => [
+                'type' => $tool->type,
+                ...$tool->options,
+            ],
+            $request->providerTools()
+        );
+
+        return array_merge($providerTools, $tools);
     }
 
     protected function appendMessageForJsonMode(Request $request): Request
