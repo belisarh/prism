@@ -1,5 +1,5 @@
 {
-  "name": "prism-php/prism",
+  "name": "belisarh/prism",
   "description": "A powerful Laravel package for integrating Large Language Models (LLMs) into your applications.",
   "type": "library",
   "license": "MIT",
