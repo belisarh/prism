@@ -51,10 +51,33 @@ readonly class ResponseBuilder
                 ? $this->decodeObject($finalStep->text)
                 : $finalStep->structured,
             finishReason: $finalStep->finishReason,
+            toolCalls: $this->getAllToolCalls(),
+            toolResults: $this->getAllToolResults(),
             usage: $this->calculateTotalUsage(),
             meta: $finalStep->meta,
+            messages: $this->responseMessages,
             additionalContent: $finalStep->additionalContent,
         );
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    protected function getAllToolCalls(): array
+    {
+        return $this->steps
+            ->flatMap(fn (Step $step): array => $step->toolCalls)
+            ->toArray();
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    protected function getAllToolResults(): array
+    {
+        return $this->steps
+            ->flatMap(fn (Step $step): array => $step->toolResults)
+            ->toArray();
     }
 
     /**
