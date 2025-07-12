@@ -8,6 +8,8 @@ use Illuminate\Support\Collection;
 use Prism\Prism\Contracts\Message;
 use Prism\Prism\Enums\FinishReason;
 use Prism\Prism\ValueObjects\Meta;
+use Prism\Prism\ValueObjects\ToolCall;
+use Prism\Prism\ValueObjects\ToolResult;
 use Prism\Prism\ValueObjects\Usage;
 
 readonly class Response
@@ -16,6 +18,9 @@ readonly class Response
      * @param  Collection<int, Step>  $steps
      * @param  Collection<int, Message>  $responseMessages
      * @param  array<mixed>  $structured
+     * @param  ToolCall[]  $toolCalls
+     * @param  ToolResult[]  $toolResults
+     * @param  Collection<int, Message>  $messages
      * @param  array<string,mixed>  $additionalContent
      */
     public function __construct(
@@ -24,8 +29,11 @@ readonly class Response
         public string $text,
         public ?array $structured,
         public FinishReason $finishReason,
+        public array $toolCalls,
+        public array $toolResults,
         public Usage $usage,
         public Meta $meta,
+        public Collection $messages,
         public array $additionalContent = []
     ) {}
 }

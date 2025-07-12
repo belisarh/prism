@@ -11,7 +11,10 @@ use Prism\Prism\Contracts\Message;
 use Prism\Prism\Contracts\PrismRequest;
 use Prism\Prism\Contracts\Schema;
 use Prism\Prism\Enums\StructuredMode;
+use Prism\Prism\Enums\ToolChoice;
+use Prism\Prism\Tool;
 use Prism\Prism\ValueObjects\Messages\SystemMessage;
+use Prism\Prism\ValueObjects\ProviderTool;
 
 class Request implements PrismRequest
 {
@@ -20,9 +23,11 @@ class Request implements PrismRequest
     /**
      * @param  SystemMessage[]  $systemPrompts
      * @param  array<int, Message>  $messages
+     * @param  array<int, Tool>  $tools
      * @param  array<string, mixed>  $clientOptions
      * @param  array{0: array<int, int>|int, 1?: Closure|int, 2?: ?callable, 3?: bool}  $clientRetry
      * @param  array<string, mixed>  $providerOptions
+     * @param  array<int, ProviderTool>  $providerTools
      */
     public function __construct(
         protected array $systemPrompts,
@@ -30,14 +35,18 @@ class Request implements PrismRequest
         protected string $providerKey,
         protected ?string $prompt,
         protected array $messages,
+        protected int $maxSteps,
         protected ?int $maxTokens,
         protected int|float|null $temperature,
         protected int|float|null $topP,
+        protected array $tools,
         protected array $clientOptions,
         protected array $clientRetry,
+        protected string|ToolChoice|null $toolChoice,
         protected Schema $schema,
         protected StructuredMode $mode,
         array $providerOptions = [],
+        protected array $providerTools = [],
     ) {
         $this->providerOptions = $providerOptions;
     }
@@ -79,6 +88,11 @@ class Request implements PrismRequest
         return $this->maxTokens;
     }
 
+    public function maxSteps(): int
+    {
+        return $this->maxSteps;
+    }
+
     public function temperature(): int|float|null
     {
         return $this->temperature;
@@ -113,6 +127,27 @@ class Request implements PrismRequest
     public function mode(): StructuredMode
     {
         return $this->mode;
+    }
+
+    /**
+     * @return Tool[]
+     */
+    public function tools(): array
+    {
+        return $this->tools;
+    }
+
+    public function toolChoice(): string|ToolChoice|null
+    {
+        return $this->toolChoice;
+    }
+
+    /**
+     * @return array<int,ProviderTool>
+     */
+    public function providerTools(): array
+    {
+        return $this->providerTools;
     }
 
     public function addMessage(Message $message): self
